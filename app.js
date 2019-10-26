@@ -1,3 +1,9 @@
+const dbManager = require("./db");
+
+dbManager.connectToServer((err,client)=>{
+    if(err) console.log(err);
+    else{
+
 const express = require("express")
 const app = express();
 /*
@@ -13,14 +19,14 @@ app.set('views','views');
 app.set('view engine','ejs');
 
 //basicamente um template que avisa o express que é pra passar as informações pro objeto request
-app.use(express.urlencoded({extended:false}))
+app.use(express.urlencoded({extended:false}));
 app.use(express.json());
-
-
 
 
 app.use(express.static("public"));
 //aqui, estamos dizendo que pra "/" e para qualquer caminho subsequente de "/", quem lida com os gets e posts é o router.
 app.use('/',router);
-
-app.listen(3002);
+app.listen(3000);
+    }
+    
+});
