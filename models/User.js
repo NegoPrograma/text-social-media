@@ -20,13 +20,36 @@ let User = function(data){
 /* Um prototipo é basicamente um paralelo ao atributo static em java, uma função geral para qualquer instância 
 User.prototype.jump = ()=>{}
 */
+
+//cleanEntry tem como propósito garantir que o usuário não mande nenhum código pelo registro, apenas strings.
+User.prototype.cleanEntry = function(){
+    if(typeof(this.data.username) != "string"){
+        this.data.username = "";
+    }
+    if(typeof(this.data.email) != "string"){
+        this.data.email = "";
+    }
+    if(typeof(this.data.password) != "string"){
+        this.data.password = "";
+    }
+
+    //talvez o usuário até tenha posto os dados certos, porém ele pode ter adicionado outras propriedades que não competem a data, como um "virus: link"
+    this.data = {
+        name: this.data.username.trim().toLowerCase(),
+        email: this.data.email.trim().toLowerCase(),
+        password: this.data.password
+    }
+}
+
+
+//função para validar a entrada.
 User.prototype.validate = function(){
     //validando o username
     if(this.data.username == ""){
         this.errors.push("You must provide a username.");
     } else {
         if(!validator.isAlphanumeric(this.data.username)){
-            this.errors.push("Your username length should be 8~14 characters long.");
+            this.errors.push("Your username can only contain letters and numbers(no special symbols).");
         }
         if(this.data.username.length > 14 || this.data.username.length < 8) {
             this.errors.push("Your username length should be 8~14 characters long.");
@@ -50,6 +73,7 @@ User.prototype.validate = function(){
 
 User.prototype.register = function(){
     //1: validando a entrada do usuário
+    this.cleanEntry();
     this.validate();
     //2: tendo garantido as validações, vamos salvar os dados no bd.
 
