@@ -9,6 +9,7 @@ No model são feitos a definição também da validação dos dados, para garant
 
 //validator é um modulo open source para validar dados.
 const validator = require("validator");
+const bcrypt = require('bcryptjs');
 
 
 //setando o collection de user
@@ -29,7 +30,6 @@ class User {
     */
     //cleanEntry tem como propósito garantir que o usuário não mande nenhum código pelo registro, apenas strings.
     cleanEntry() {
-        console.log(typeof (this.data.username));
         if (typeof(this.data.username) != "string") {
             this.data.username = "";
         }
@@ -56,8 +56,8 @@ class User {
             if (!validator.isAlphanumeric(this.data.username)) {
                 this.errors.push("Your username can only contain letters and numbers(no special symbols).");
             }
-            if (this.data.username.length > 14 || this.data.username.length < 8) {
-                this.errors.push("Your username length should be 8~14 characters long.");
+            if (this.data.username.length > 50 || this.data.username.length < 8) {
+                this.errors.push("Your username length should be 8~50 characters long.");
             }
         }
         //validando email
@@ -80,9 +80,63 @@ class User {
         
         //2: tendo garantido as validações, vamos salvar os dados no bd.
         if (this.errors.length == 0) {
+            //agora vamos hashear a senha para proteger os usuários
+            let salt = bcrypt.genSaltSync(10);
+            this.data.password = bcrypt.hashSync(this.data.password,salt);
+
+            //agora sim, a senha ta hasheada 
             usersCollection.insertOne(this.data);
         }
     }
+
+    login() {
+       /* 
+       Abaixo, uma versão intuitiva e direta de uma simulação de login
+       porém ela trás alguns problemas, o maior delas sendo que não sabemos quanto tempo "find" leva pra fazer a busca, 
+       e por isso precisamos padronizar a resposta do servidor para ela, usando promises.
+       
+       this.cleanEntry();
+        usersCollection.findOne({username:this.data.username},(err,user)=>{
+            if(user){
+                if(user.password == this.data.password)
+                    console.log("correct info! you're in.");
+                    
+            } else {
+                console.log("user does not exist.");
+                
+            }
+            
+            //callback do find
+            if (user) {
+                    if(user.password == this.data.password)
+                        resolve("correct info! you're in.");
+                } else {
+                        reject("user does not exist.");
+                }
+        }) */
+        return new Promise((resolve,reject)=>{
+            this.cleanEntry();
+            usersCollection.findOne({username:this.data.username}).then((user)=>{
+                if(user){
+                    //compareSync usa 2 parâmetros, o primeiro sendo o que eles escreveram, e o segundo o pass já hasheado que foi salvo no BD
+                    if(bcrypt.compareSync(this.data.password,user.password))
+                        resolve("Congratz! you're in.")
+                    else
+                        reject("incorrect pass.")                    
+                } else {
+                    reject("username does not exist.")
+                }
+            }).catch((err)=>{
+                reject("Try again later.");
+            });
+        
+        
+        })
+
+
+
+    }
+
 }
 
 

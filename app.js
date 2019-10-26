@@ -12,7 +12,9 @@ o node executar o arquivo que a contém.
 
 */
 const router = require('./router.js');
-
+//configurando a porta de acesso 
+const dotenv = require("dotenv");
+dotenv.config()
 
 //app.set("um objeto do express(como views, model ou view engines)","nome da pasta que guarda os arquivos correspondentes ou modulo correspondente para o objeto selecionado")
 app.set('views','views');
@@ -26,7 +28,7 @@ app.use(express.json());
 app.use(express.static("public"));
 //aqui, estamos dizendo que pra "/" e para qualquer caminho subsequente de "/", quem lida com os gets e posts é o router.
 app.use('/',router);
-app.listen(3000);
+app.listen(process.env.PORT);
     }
     
 });
