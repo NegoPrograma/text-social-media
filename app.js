@@ -3,7 +3,7 @@ const dbManager = require("./db");
 dbManager.connectToServer((err,client)=>{
     if(err) console.log(err);
     else{
-
+//não houve erro, logo o bd foi conectado com sucesso.
 const express = require("express")
 const app = express();
 /*
@@ -15,6 +15,27 @@ const router = require('./router.js');
 //configurando a porta de acesso 
 const dotenv = require("dotenv");
 dotenv.config()
+
+//configurando a session do app
+const session = require('express-session');
+//mongo store é um módulo cujo objetivo é auxiliar o armazenamento da sessão no BD, para que as sessões não fiquem dependentes do estado atual do servidor
+const MongoStore = require('connect-mongo')(session);
+let sessionOptions = session({
+    secret: "JS é foda",
+    store: new MongoStore({client: dbManager.getClient()}),
+    resave: false,
+    saveUninitialized: false,
+    cookie : {
+        //definindo a duração de session
+        maxAge:1000*60*60*24,
+        httpOnly: true
+        }
+});
+
+
+
+app.use(sessionOptions);
+
 
 //app.set("um objeto do express(como views, model ou view engines)","nome da pasta que guarda os arquivos correspondentes ou modulo correspondente para o objeto selecionado")
 app.set('views','views');

@@ -5,6 +5,7 @@ exports.login = (req,res) => {
     let user = new User(req.body);
     //dado que login retorna uma promise, ela tem métodos then e catch, para lidar com o sucesso ou insucesso da busca.
     user.login().then( (message)=>{
+        req.session.user = {username: user.data.username}
         res.send(message);
     } ).catch((e)=>{
         res.send(e);
@@ -19,11 +20,19 @@ exports.register = (req, res) => {
     if(user.errors.length){
         res.send(user.errors);
     } else {
+
         res.send("Congrats, it's valid.");
     }
 }
 
+
 exports.home = (req, res) => {
-    res.render('home-guest');
+    if(req.session.user){ 
+        res.send("Welcome to the app!");
+    } else {
+        res.render("home-guest")
+    }
+    
+    //res.render('home-guest');
 }
 exports.profile = () =>{}

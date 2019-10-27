@@ -11,14 +11,18 @@ module.exports = {
     connectToServer: function(callback){
         mongodb.connect(process.env.CONNECTIONSTRING,{useNewUrlParser:true, useUnifiedTopology:true},(error,client)=>{
             //criamos um módulo isolado para poder chamar o db nos models.
-            _db = client.db('socialmediaDB');
+            _db = client;
             return callback(error);
         });
         
     },
 
-    getDb: function(){
+    getClient: function(){
         return _db;
+    },
+
+    getDb: function(){
+        return _db.db('socialmediaDB');
     }
 };
 
