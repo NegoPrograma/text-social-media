@@ -48,45 +48,63 @@ class User {
     }
     //função para validar a entrada.
     validate() {
-        //validando o username
-        if (this.data.username == "") {
-            this.errors.push("You must provide a username.");
-        }
-        else {
-            if (!validator.isAlphanumeric(this.data.username)) {
-                this.errors.push("Your username can only contain letters and numbers(no special symbols).");
-            }
-            if (this.data.username.length > 50 || this.data.username.length < 8) {
-                this.errors.push("Your username length should be 8~50 characters long.");
-            }
-        }
-        //validando email
-        if (!validator.isEmail(this.data.email)) {
-            this.errors.push("You must provide a valid email.");
-        }
-        //validando senha
-        if (this.data.password == "") {
-            this.errors.push("You must provide a password!");
-        }
-        else if (this.data.password.length > 14 || this.data.password.length < 8) {
-            this.errors.push("Your password length should be 8~14 characters long.");
-        }
-    }
-    register() {
-        //1: validando a entrada do usuário
-        this.cleanEntry();
-        this.validate();
-        console.log(this.errors.length);
-        
-        //2: tendo garantido as validações, vamos salvar os dados no bd.
-        if (this.errors.length == 0) {
-            //agora vamos hashear a senha para proteger os usuários
-            let salt = bcrypt.genSaltSync(10);
-            this.data.password = bcrypt.hashSync(this.data.password,salt);
+        return new Promise(async (resolve, reject)=>{     //validando o username
+                if (this.data.username == "") {
+                    this.errors.push("You must provide a username.");
+                } 
+                if (!validator.isAlphanumeric(this.data.username)) {
+                    this.errors.push("Your username can only contain letters and numbers(no special symbols).");
+                }
+                if (this.data.username.length > 50 || this.data.username.length < 8) {
+                    this.errors.push("Your username length should be 8~50 characters long.");
+                } 
+                if(this.data.username.length < 50 && this.data.username.length > 8){
+                    //se chegou até aqui, não houve erro algum na validação de username, então vejamos agora se o username já existe.
 
-            //agora sim, a senha ta hasheada 
-            usersCollection.insertOne(this.data);
-        }
+                    //a função findOne retorna o objeto em caso de sucesso e NULL em caso de falha.
+                    let username = await usersCollection.findOne({username: this.data.username});
+                    if(username) this.errors.push("username already taken");
+                }
+                //validando email
+                if (!validator.isEmail(this.data.email)) {
+                    this.errors.push("You must provide a valid email.");
+                } else {
+                    //se chegou até aqui, não houve erro algum na validação de username, então vejamos agora se o username já existe.
+
+                    //a função findOne retorna o objeto em caso de sucesso e NULL em caso de falha.
+                let email = await usersCollection.findOne({email: this.data.email});
+                if(email) this.errors.push("email already taken");
+                }
+                //validando senha
+                if (this.data.password == "") {
+                    this.errors.push("You must provide a password!");
+                }
+                else if (this.data.password.length > 14 || this.data.password.length < 8) {
+                    this.errors.push("Your password length should be 8~14 characters long.");
+                } 
+                resolve();
+            });
+    }
+     register() {
+       return new Promise( async (resolve,reject)=>{ //1: validando a entrada do usuário
+            this.cleanEntry();
+            //transformamos validate em uma promise, logo ela suporta await
+            await this.validate();
+            console.log(this.errors.length);
+            
+            //2: tendo garantido as validações, vamos salvar os dados no bd.
+            if (this.errors.length == 0) {
+                //agora vamos hashear a senha para proteger os usuários
+                let salt = bcrypt.genSaltSync(10);
+                this.data.password = bcrypt.hashSync(this.data.password,salt);
+
+                //agora sim, a senha ta hasheada 
+                await usersCollection.insertOne(this.data);
+                resolve()
+            } else {
+                reject(this.errors);
+            }
+        })
     }
 
     login() {

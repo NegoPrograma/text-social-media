@@ -25,13 +25,20 @@ exports.logout = (req,res) => {
 
 exports.register = (req, res) => {
     let user = new User(req.body);
-    user.register();  
-    if(user.errors.length){
-        res.send(user.errors);
-    } else {
-
-        res.send("Congrats, it's valid.");
-    }
+    user.register().then(()=>{
+        req.session.user = {username: user.data.username}
+        req.session.save(()=>{
+            res.redirect('/');
+        });
+    }).catch((regErrors)=>{
+        regErrors.forEach((error)=>{
+            req.flash('regErrors',error);
+        });
+        req.session.save(()=>{
+            res.redirect('/');
+        });
+    });  
+    
 }
 
 
@@ -40,7 +47,7 @@ exports.home = (req, res) => {
         res.render("home-logged-in",{username: req.session.user.username});
     } else {
         //a requisição de flash retorna o array desejado e logo após se auto destrói.
-        res.render("home-guest",{errors: req.flash('errors')});
+        res.render("home-guest",{errors: req.flash('errors'),regErrors: req.flash('regErrors')});
     }
     
     //res.render('home-guest');
