@@ -10,7 +10,7 @@ No model são feitos a definição também da validação dos dados, para garant
 //validator é um modulo open source para validar dados.
 const validator = require("validator");
 const bcrypt = require('bcryptjs');
-
+const md5 = require('md5')
 
 //setando o collection de user
 const db = require("../db.js").getDb();
@@ -100,6 +100,7 @@ class User {
 
                 //agora sim, a senha ta hasheada 
                 await usersCollection.insertOne(this.data);
+                this.getAvatar();
                 resolve()
             } else {
                 reject(this.errors);
@@ -137,9 +138,11 @@ class User {
             usersCollection.findOne({username:this.data.username}).then((user)=>{
                 if(user){
                     //compareSync usa 2 parâmetros, o primeiro sendo o que eles escreveram, e o segundo o pass já hasheado que foi salvo no BD
-                    if(bcrypt.compareSync(this.data.password,user.password))
+                    if(bcrypt.compareSync(this.data.password,user.password)){
+                        this.data = user;
+                        this.getAvatar();    
                         resolve("Congratz! you're in.")
-                    else
+                }else
                         reject("incorrect pass.")                    
                 } else {
                     reject("username does not exist.")
@@ -147,14 +150,14 @@ class User {
             }).catch((err)=>{
                 reject("Try again later.");
             });
-        
-        
         })
-
-
-
     }
-
+    getAvatar() {
+        /* Afim de proteger o usuário, vamos utilizar o utilitário do Globaly Recognized Avatar, ou GRavatar
+            O GRavatar utiliza o algoritmo MD5 para hashear o email do usuário no link de sua imagem para proteger a identidade do mesmo, e por isso vamos usar o módulo md5 para nos auxiliar 
+             */
+        this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
+    }
 }
 
 
