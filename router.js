@@ -23,6 +23,7 @@ router.get('/about',);
 
 
 
+router.post('/sign-out',userController.logout);
 router.post('/register',userController.register);
 router.post('/login',userController.login);
 
