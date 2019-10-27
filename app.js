@@ -16,6 +16,9 @@ const router = require('./router.js');
 const dotenv = require("dotenv");
 dotenv.config()
 
+//modulo de flash para modelar erros 
+const flash = require('connect-flash')
+
 //configurando a session do app
 const session = require('express-session');
 //mongo store é um módulo cujo objetivo é auxiliar o armazenamento da sessão no BD, para que as sessões não fiquem dependentes do estado atual do servidor
@@ -36,6 +39,7 @@ let sessionOptions = session({
 
 app.use(sessionOptions);
 
+app.use(flash());
 
 //app.set("um objeto do express(como views, model ou view engines)","nome da pasta que guarda os arquivos correspondentes ou modulo correspondente para o objeto selecionado")
 app.set('views','views');

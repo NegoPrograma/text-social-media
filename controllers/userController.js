@@ -11,7 +11,10 @@ exports.login = (req,res) => {
             res.redirect('/');
         });
     }).catch((e)=>{
-        res.send(e);
+        //o package do flash cria um atributo novo para session, que é um vetor cujo nome é o primeiro parâmetro e adiciona "e" nele
+        //para acessar, usar req.session.flash.errors
+        req.flash('errors',e); 
+        req.session.save(()=>{res.redirect('/');});
     });
 }
 
@@ -36,7 +39,8 @@ exports.home = (req, res) => {
     if(req.session.user){ 
         res.render("home-logged-in",{username: req.session.user.username});
     } else {
-        res.render("home-guest");
+        //a requisição de flash retorna o array desejado e logo após se auto destrói.
+        res.render("home-guest",{errors: req.flash('errors')});
     }
     
     //res.render('home-guest');
