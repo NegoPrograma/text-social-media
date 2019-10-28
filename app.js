@@ -38,8 +38,14 @@ let sessionOptions = session({
 
 
 app.use(sessionOptions);
-
 app.use(flash());
+
+//app.use(callback) representa algo que é chamado  antes de qualquer request
+app.use(function(req,res,next){
+    //res.locals é um objeto dinâmico que pode servir de parâmetro em todo arquivo EJS
+    res.locals.user = req.session.user;
+    next();
+});
 
 //app.set("um objeto do express(como views, model ou view engines)","nome da pasta que guarda os arquivos correspondentes ou modulo correspondente para o objeto selecionado")
 app.set('views','views');

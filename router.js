@@ -13,19 +13,19 @@ A metodologia geral de uso é: define o .get e post aqui, e no app vc usa a app.
 const express = require('express')
 const router = express.Router();
 const userController = require('./controllers/userController.js');
-
+const postController = require('./controllers/postController.js');
 
 router.get('/',userController.home);
 
 /*dada a sintaxe de controllers, quando vc for por uma função no router
 não é necessario executar(botar os parênteses) a função, apenas nomeie ela corretamente.*/
-router.get('/about',);
+router.get('/create-post',userController.loggedIn,postController.createScreen);
 
 
 
 router.post('/sign-out',userController.logout);
 router.post('/register',userController.register);
 router.post('/login',userController.login);
-
+router.post('/create-post',userController.loggedIn,postController.create);
 
 module.exports = router;

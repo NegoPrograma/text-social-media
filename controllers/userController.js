@@ -18,6 +18,18 @@ exports.login = (req,res) => {
     });
 }
 
+exports.loggedIn = (req,res,next)=>{
+    if(req.session.user)
+        next();
+    else{
+        req.flash("errors","You must be logged in to perform this action.");
+        req.session.save(()=>{
+            res.redirect('/');
+        })
+    }        
+}
+
+
 exports.logout = (req,res) => {
     req.session.destroy();
     res.redirect('/');
@@ -44,7 +56,7 @@ exports.register = (req, res) => {
 
 exports.home = (req, res) => {
     if(req.session.user){ 
-        res.render("home-logged-in",{username: req.session.user.username,avatar: req.session.user.avatar});
+        res.render("home-logged-in");
     } else {
         //a requisição de flash retorna o array desejado e logo após se auto destrói.
         res.render("home-guest",{errors: req.flash('errors'),regErrors: req.flash('regErrors')});
