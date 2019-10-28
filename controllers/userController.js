@@ -5,7 +5,7 @@ exports.login = (req,res) => {
     let user = new User(req.body);
     //dado que login retorna uma promise, ela tem métodos then e catch, para lidar com o sucesso ou insucesso da busca.
     user.login().then( (message)=>{
-        req.session.user = {avatar:user.avatar,username: user.data.username};
+        req.session.user = {avatar:user.avatar,username: user.data.username,_id:user.data._id};
         // nós não sabemos quanto tempo leva para o servidor guardar a sessão, por isso usaremos um callback para mostrar a view apenas após a função save ter sido completada
         req.session.save(()=>{
             res.redirect('/');
@@ -38,7 +38,7 @@ exports.logout = (req,res) => {
 exports.register = (req, res) => {
     let user = new User(req.body);
     user.register().then(()=>{
-        req.session.user = {avatar:user.avatar,username: user.data.username};
+        req.session.user = {avatar:user.avatar,username: user.data.username,_id:user.data._id};
         req.session.save(()=>{
             res.redirect('/');
         });

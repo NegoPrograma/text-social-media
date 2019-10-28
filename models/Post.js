@@ -2,12 +2,14 @@
 const db = require("../db.js").getDb();
 const postsCollection = db.collection("posts");
 
+const ObjectID = require("mongodb").ObjectID;
 
 
 class Post {
-    constructor(data){
+    constructor(data,_id){
         this.data = data;
         this.errors = [];
+        this._id = _id;
     }
 
     cleanEntry() {
@@ -21,6 +23,7 @@ class Post {
         this.data = {
             title: this.data.title.trim(),
             body: this.data.body.trim(),
+            author: ObjectID(this._id),
             createdDate: new Date()
         }
     }
@@ -41,7 +44,7 @@ class Post {
             if(this.errors.length){
                 reject(this.errors)
             } else {
-                await postsCollection.insertOne({title:this.data.title,body: this.data.body,date: this.data.createdDate})
+                await postsCollection.insertOne({title:this.data.title,body: this.data.body,date: this.data.createdDate,author: this._id})
                 resolve()
             }
         });
