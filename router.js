@@ -20,7 +20,7 @@ router.get('/',userController.home);
 /*dada a sintaxe de controllers, quando vc for por uma função no router
 não é necessario executar(botar os parênteses) a função, apenas nomeie ela corretamente.*/
 router.get('/create-post',userController.loggedIn,postController.createScreen);
-
+router.get('/post/:id',postController.showPost);
 
 
 router.post('/sign-out',userController.logout);

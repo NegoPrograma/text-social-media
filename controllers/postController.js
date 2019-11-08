@@ -12,3 +12,13 @@ exports.create = (req,res) =>{
         res.send(error);
     });
 }
+
+
+exports.showPost = async (req,res) =>{
+    try {
+        let post = Post.findPost(req.params.id).then((post)=>{ return post;}).catch(()=>{res.render('home-guest')});
+        res.render('single-post',{post:post});
+    } catch (error) {
+        
+    }
+}

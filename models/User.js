@@ -156,7 +156,7 @@ class User {
         /* Afim de proteger o usuário, vamos utilizar o utilitário do Globaly Recognized Avatar, ou GRavatar
             O GRavatar utiliza o algoritmo MD5 para hashear o email do usuário no link de sua imagem para proteger a identidade do mesmo, e por isso vamos usar o módulo md5 para nos auxiliar 
              */
-        this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
+        this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`;
     }
 }
 
