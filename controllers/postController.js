@@ -16,9 +16,9 @@ exports.create = (req,res) =>{
 
 exports.showPost = async (req,res) =>{
     try {
-        let post = Post.findPost(req.params.id).then((post)=>{ return post;}).catch(()=>{res.render('home-guest')});
+        let post = await Post.findPost(req.params.id);
         res.render('single-post',{post:post});
     } catch (error) {
-        
+        res.render('404');        
     }
 }

@@ -20,11 +20,17 @@ const usersCollection = db.collection("users");
 
 
 class User {
-    constructor(data) {
+    constructor(data, getAvatar) {
         //data é o json que contém todos os valores de req.body
         this.data = data;
         this.errors = [];
+        if(getAvatar == undefined){
+             getAvatar = false;
+        } else if(getAvatar){
+            this.getAvatar();
+        }
     }
+
     /* Um prototipo é basicamente um paralelo ao atributo static em java, uma função geral para qualquer instância
     User.prototype.jump = ()=>{}
     */

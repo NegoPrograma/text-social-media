@@ -1,8 +1,8 @@
 
 const db = require("../db.js").getDb();
 const postsCollection = db.collection("posts");
-
 const ObjectID = require("mongodb").ObjectID;
+const User = require('./User');
 
 
 class Post {
@@ -44,21 +44,56 @@ class Post {
             if(this.errors.length){
                 reject(this.errors)
             } else {
-                await postsCollection.insertOne({title:this.data.title,body: this.data.body,date: this.data.createdDate,author: this._id})
+                await postsCollection.insertOne({title:this.data.title,body: this.data.body,date: this.data.createdDate,author: new ObjectID(this._id)})
                 resolve()
             }
         });
     }
 
-    findPost(id) {
+   static findPost(id) {
         return new Promise(async (resolve,reject)=>{
             if(typeof(id) != "string" || !ObjectID.isValid(id)){
                 reject();
                 return
             }
-            let post = await postsCollection.findOne({_id: new ObjectID(id)});
-            if(post){
-                resolve(post);
+            //aggregate é um método que te permite fazer múltiplas consultas de acordo com múltiplos parâmetros, é uma busca mais complexa, como um join em SQL
+            let postArray = await postsCollection.aggregate([
+                /*a consulta em aggregate usa certos parâmetros, vamos explicar eles agora:
+                $match é o critério de comparação, é ele quem determina quantos objetos da nossa configuração específica de busca vão aparecer
+                $lookup é o parâmetro mais importante, é ele que define exatamente o porquê a nossa busca é específica
+                o lookup possui por sua vez 4 parâmetros próprios:
+                from: a collection que a nossa collection atual vai se juntar pra fazer a busca
+                localField: a chave primaria, basicamente qual coluna será comparada
+                foreignField: a chave estrangeira, que deverá por sua vez ser um campo da collection especificada no from, que contem o mesmo valor da nossa chave primaria
+                as: é o nome que vc vai dar ao nome do array de objetos mistos que será retornado dessa consulta especial
+                
+                basicamente, o que o lookup retorna são os objetos da collection externa que passaram na condição de match
+
+
+                $project é basicamente formatação, ele é opcional e define como será montado cada elemento do array definido no lookup(no "as:");
+                */
+                {$match: {_id: new ObjectID(id)}},
+                {$lookup: {from: "users",localField: "author", foreignField: "_id", as:"authorDocument"}},
+                {$project: 
+                    {title:1, 
+                    body:1,
+                    date:1, 
+                    //repare que, geralmente authorDocument retorna um array, mas a gente manda só o primeiro objeto JSON de user porque sabemos que o nosso critério de busca só vai retornar um elemento de qualquer forma
+                    author:{$arrayElemAt: ["$authorDocument",0]} }
+                }
+            ]).toArray();
+            //como o authorDocument retorna o objeto inteiro de users, que contem a senha e email, vamos filtrar as informações sensíveis antes de mandar pra view.       
+            postArray = postArray.map((post)=>{
+                post.author = {
+                    username: post.author.username,
+                    avatar: new User(post.author,true).avatar //repare que new User é o objeto em si, ele não precisa ser guardado numa variável antes de fazer as operações sobre ele, só fazemos isso para ter referência do objeto depois
+                }
+                return post;
+            });
+            if(postArray.length){
+                console.log(postArray[0]);
+                
+                resolve(postArray[0]);
             } else {
                 reject();
             }
