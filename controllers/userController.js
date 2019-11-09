@@ -1,6 +1,26 @@
 //exports.objeto/função/variavel outra sintaxe de exportar funções, de um jeito mais limpo.
 const User = require('../models/User.js')
 
+
+exports.userExists = (req,res,next) =>{
+    User.findByUsername(req.params.username).then((userDoc)=>{
+        //podemos adicionar quantos atributos quisermos no request
+        req.profileUser = userDoc;
+        next();
+    }).catch(()=>{
+        res.render('404');
+    })
+}
+
+exports.profilePosts = (req,res)=>{
+    
+    res.render('profile',{
+        username: req.profileUser.username,
+        avatar: req.profileUser.avatar,
+    });
+}
+
+
 exports.login = (req,res) => {
     let user = new User(req.body);
     //dado que login retorna uma promise, ela tem métodos then e catch, para lidar com o sucesso ou insucesso da busca.

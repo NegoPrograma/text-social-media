@@ -114,6 +114,33 @@ class User {
         })
     }
 
+    static findByUsername(username){
+        return new Promise(async (resolve,reject)=>{
+            if(typeof(username) == "string"){
+                usersCollection.findOne({username: username}).then((userfound)=>{
+                    console.log(userfound);
+                    if(userfound){
+                        let user = new User(userfound,true);
+                        user = {
+                            _id: userfound._id,
+                            username: userfound.username,
+                            avatar: userfound.avatar
+                        };
+                        resolve(user);
+                        return;
+                    } else{
+                        reject();
+                    }
+                }).catch(()=>{
+                    reject();
+                })
+            } else {
+                reject();
+                return;
+            }
+        })
+    }
+
     login() {
        /* 
        Abaixo, uma versão intuitiva e direta de uma simulação de login

@@ -21,6 +21,7 @@ router.get('/',userController.home);
 não é necessario executar(botar os parênteses) a função, apenas nomeie ela corretamente.*/
 router.get('/create-post',userController.loggedIn,postController.createScreen);
 router.get('/post/:id',postController.showPost);
+router.get('/profile/:username',userController.userExists,userController.profilePosts);
 
 
 router.post('/sign-out',userController.logout);
