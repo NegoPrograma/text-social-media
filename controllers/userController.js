@@ -1,5 +1,6 @@
 //exports.objeto/função/variavel outra sintaxe de exportar funções, de um jeito mais limpo.
 const User = require('../models/User.js')
+const Post = require('../models/Post.js')
 
 
 exports.userExists = (req,res,next) =>{
@@ -13,11 +14,18 @@ exports.userExists = (req,res,next) =>{
 }
 
 exports.profilePosts = (req,res)=>{
+    Post.findByAuthor(req.profileUser._id).then((posts)=>{
+        console.log(posts);
+        
+        res.render('profile',{
+            username: req.profileUser.username,
+            avatar: req.profileUser.avatar,
+            posts: posts
+        });
+    }).catch(()=>{
+        res.render('404');
+    })
     
-    res.render('profile',{
-        username: req.profileUser.username,
-        avatar: req.profileUser.avatar,
-    });
 }
 
 

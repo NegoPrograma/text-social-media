@@ -56,8 +56,34 @@ class Post {
                 reject();
                 return
             }
+            let postArray = await Post.PostQuery([
+                {$match: {_id: new ObjectID(id)}}
+            ]);
+            if(postArray.length){
+                console.log(postArray[0]);
+                
+                resolve(postArray[0]);
+            } else {
+                reject();
+            }
+        });
+    }
+    static PostQuery(match) {
+        return new Promise(async (resolve,reject)=>{
+            let aggOptions = match.concat([
+                {$lookup: {from: "users",localField: "author", foreignField: "_id", as:"authorDocument"}},
+                {$project: 
+                        {title:1, 
+                        body:1,
+                        date:1, 
+                        //repare que, geralmente authorDocument retorna um array, mas a gente manda só o primeiro objeto JSON de user porque sabemos que o nosso critério de busca só vai retornar um elemento de qualquer forma
+                        author:{$arrayElemAt: ["$authorDocument",0]} 
+                        }
+                }]);
+                console.log("aggopitons:" + aggOptions);
+                
             //aggregate é um método que te permite fazer múltiplas consultas de acordo com múltiplos parâmetros, é uma busca mais complexa, como um join em SQL
-            let postArray = await postsCollection.aggregate([
+            let postArray = await postsCollection.aggregate(
                 /*a consulta em aggregate usa certos parâmetros, vamos explicar eles agora:
                 $match é o critério de comparação, é ele quem determina quantos objetos da nossa configuração específica de busca vão aparecer
                 $lookup é o parâmetro mais importante, é ele que define exatamente o porquê a nossa busca é específica
@@ -69,19 +95,9 @@ class Post {
                 
                 basicamente, o que o lookup retorna são os objetos da collection externa que passaram na condição de match
 
-
                 $project é basicamente formatação, ele é opcional e define como será montado cada elemento do array definido no lookup(no "as:");
                 */
-                {$match: {_id: new ObjectID(id)}},
-                {$lookup: {from: "users",localField: "author", foreignField: "_id", as:"authorDocument"}},
-                {$project: 
-                    {title:1, 
-                    body:1,
-                    date:1, 
-                    //repare que, geralmente authorDocument retorna um array, mas a gente manda só o primeiro objeto JSON de user porque sabemos que o nosso critério de busca só vai retornar um elemento de qualquer forma
-                    author:{$arrayElemAt: ["$authorDocument",0]} }
-                }
-            ]).toArray();
+            aggOptions).toArray();
             //como o authorDocument retorna o objeto inteiro de users, que contem a senha e email, vamos filtrar as informações sensíveis antes de mandar pra view.       
             postArray = postArray.map((post)=>{
                 post.author = {
@@ -93,12 +109,18 @@ class Post {
             if(postArray.length){
                 console.log(postArray[0]);
                 
-                resolve(postArray[0]);
+                resolve(postArray);
             } else {
                 reject();
             }
-
         });
+    }
+    static findByAuthor(authorId) {
+        return Post.PostQuery([
+            {$match: {author: authorId}},
+            {$sort: {date: -1}}
+        ]);
+
     }
 }
 

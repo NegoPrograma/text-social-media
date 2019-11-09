@@ -124,7 +124,7 @@ class User {
                         user = {
                             _id: userfound._id,
                             username: userfound.username,
-                            avatar: userfound.avatar
+                            avatar: user.avatar
                         };
                         resolve(user);
                         return;
